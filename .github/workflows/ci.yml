@@ -82,12 +82,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Deploy API to Railway
+        # Account/team token → RAILWAY_API_TOKEN + explicit --project/--environment.
+        # (A project-scoped token would use RAILWAY_TOKEN and need neither.)
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then echo "RAILWAY_TOKEN not set — skipping API deploy"; exit 0; fi
+          if [ -z "$RAILWAY_API_TOKEN" ]; then echo "RAILWAY token not set — skipping API deploy"; exit 0; fi
           npm i -g @railway/cli
-          railway up --service api --ci
+          railway up --service api \
+            --project bfe2bf8a-f767-4620-8ae0-64c5096e2ca8 \
+            --environment production --ci
 
       - name: Deploy web to Vercel
         working-directory: apps/web
