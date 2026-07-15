@@ -31,8 +31,9 @@ async function bootstrap() {
     .build();
   SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, config));
 
-  const port = Number(process.env.API_PORT ?? 4000);
-  await app.listen(port);
+  // Railway/Render/Heroku inject PORT and route to it; prefer it, then API_PORT.
+  const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
+  await app.listen(port, '0.0.0.0');
   Logger.log(`API listening on http://localhost:${port} (docs at /docs)`, 'Bootstrap');
 }
 
