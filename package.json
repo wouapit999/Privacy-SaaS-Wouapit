@@ -1,0 +1,22 @@
+{
+  "name": "privacy-presence-manager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Discover and manage your own public online presence — consent-first.",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"pnpm --filter @ppm/api dev\" \"pnpm --filter @ppm/web dev\"",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.2"
+  }
+}

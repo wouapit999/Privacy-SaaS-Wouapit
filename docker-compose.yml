@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ppm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ppm_local_password}
+      POSTGRES_DB: ${POSTGRES_DB:-ppm}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ppm}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ppm}:${POSTGRES_PASSWORD:-ppm_local_password}@postgres:5432/${POSTGRES_DB:-ppm}?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      API_PORT: 4000
+      WEB_ORIGIN: http://localhost:3000
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-me}
+      FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY:-ZGV2LW9ubHktMzItYnl0ZS1rZXktY2hhbmdlbWUhISE=}
+      AI_PROVIDER: ${AI_PROVIDER:-stub}
+      DISCOVERY_RESPECT_ROBOTS: "true"
+    ports:
+      - "4000:4000"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:

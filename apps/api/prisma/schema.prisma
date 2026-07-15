@@ -1,0 +1,286 @@
+// Privacy Presence Manager — data model.
+// Every scan-related row is owned by a user and, transitively, by a *verified*
+// identity. There is no schema path to store data about a non-owned person.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum IdentityType {
+  EMAIL
+  DOMAIN
+  USERNAME
+  SOCIAL_HANDLE
+  NAME
+}
+
+enum VerificationMethod {
+  EMAIL
+  DNS
+  OAUTH
+}
+
+enum ScanStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum DiscoveredKind {
+  PROFILE
+  POST
+  COMMENT
+  IMAGE
+  VIDEO
+  ARTICLE
+  CACHED_PAGE
+}
+
+enum RemovalKind {
+  GDPR
+  CCPA
+  PROFILE_REMOVAL
+  PRIVACY_SETTINGS
+}
+
+enum PrivacyRequestStatus {
+  DRAFT
+  SENT
+  RESOLVED
+}
+
+enum MonitorFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  name         String?
+  role         Role     @default(USER)
+
+  // MFA
+  mfaEnabled Boolean @default(false)
+  mfaSecret  String? // encrypted at rest
+
+  // Consent & privacy controls
+  consentGivenAt   DateTime?
+  marketingOptIn   Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  identities    VerifiedIdentity[]
+  oauthAccounts OAuthAccount[]
+  scanJobs      ScanJob[]
+  privacyReqs   PrivacyRequest[]
+  monitorRules  MonitorRule[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model OAuthAccount {
+  id             String @id @default(cuid())
+  userId         String
+  provider       String // google | microsoft | github | ...
+  providerUserId String
+  accessToken    String? // encrypted at rest
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@map("oauth_accounts")
+}
+
+model VerifiedIdentity {
+  id            String       @id @default(cuid())
+  userId        String
+  type          IdentityType
+  // The user-facing value (e.g. domain) is stored plaintext; sensitive values
+  // (email/handle) are stored encrypted in `valueEncrypted`.
+  displayValue  String
+  valueEncrypted String?
+  method        VerificationMethod?
+  verifiedAt    DateTime?
+  // Proof material (e.g. DNS TXT token or emailed token hash).
+  proofToken    String?
+  proofExpires  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scanJobs ScanJob[]
+  profiles DiscoveredProfile[]
+
+  @@index([userId])
+  @@map("verified_identities")
+}
+
+model ScanJob {
+  id         String     @id @default(cuid())
+  userId     String
+  identityId String
+  status     ScanStatus @default(QUEUED)
+  error      String?
+  startedAt  DateTime?
+  finishedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  identity VerifiedIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  results  ScanResult[]
+
+  @@index([userId])
+  @@index([identityId])
+  @@map("scan_jobs")
+}
+
+model ScanResult {
+  id           String   @id @default(cuid())
+  scanJobId    String
+  url          String
+  title        String?
+  source       String
+  confidence   Float    @default(0)
+  discoveredAt DateTime @default(now())
+
+  scanJob ScanJob            @relation(fields: [scanJobId], references: [id], onDelete: Cascade)
+  profile DiscoveredProfile?
+
+  @@index([scanJobId])
+  @@map("scan_results")
+}
+
+model DiscoveredProfile {
+  id           String         @id @default(cuid())
+  identityId   String
+  scanResultId String?        @unique
+  url          String
+  title        String?
+  source       String
+  kind         DiscoveredKind @default(PROFILE)
+  confidence   Float          @default(0)
+  // AI classification tags, PII flags.
+  tags         String[]       @default([])
+  hasEmail     Boolean        @default(false)
+  hasPhone     Boolean        @default(false)
+  hasAddress   Boolean        @default(false)
+  riskScore    Float          @default(0)
+  discoveredAt DateTime       @default(now())
+  removedAt    DateTime?
+
+  identity   VerifiedIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  scanResult ScanResult?      @relation(fields: [scanResultId], references: [id])
+  posts      DiscoveredPost[]
+
+  @@index([identityId])
+  @@map("discovered_profiles")
+}
+
+model DiscoveredPost {
+  id           String         @id @default(cuid())
+  profileId    String
+  url          String
+  excerpt      String?
+  kind         DiscoveredKind @default(POST)
+  publishedAt  DateTime?
+  discoveredAt DateTime       @default(now())
+
+  profile DiscoveredProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@map("discovered_posts")
+}
+
+model PrivacyRequest {
+  id        String               @id @default(cuid())
+  userId    String
+  profileId String?
+  kind      RemovalKind
+  status    PrivacyRequestStatus @default(DRAFT)
+  body      String // generated template text
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("privacy_requests")
+}
+
+model MonitorRule {
+  id         String           @id @default(cuid())
+  userId     String
+  query      String // name variation / username / email hash / domain
+  frequency  MonitorFrequency @default(WEEKLY)
+  active     Boolean          @default(true)
+  lastRunAt  DateTime?
+  createdAt  DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("monitor_rules")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // new_mention | removed_page | report | ...
+  title     String
+  body      String?
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  target    String?
+  ip        String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("audit_logs")
+}
