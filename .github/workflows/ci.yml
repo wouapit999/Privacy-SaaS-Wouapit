@@ -70,3 +70,32 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  # Auto-deploy on push to main, only after tests pass. Uses CLI tokens instead
+  # of the platforms' GitHub App integrations (which require browser-based repo
+  # authorization). Add these repo secrets: RAILWAY_TOKEN, VERCEL_TOKEN.
+  deploy:
+    needs: build-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy API to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then echo "RAILWAY_TOKEN not set — skipping API deploy"; exit 0; fi
+          npm i -g @railway/cli
+          railway up --service api --ci
+
+      - name: Deploy web to Vercel
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_PLByl7XheGBfCgDVT89quJSc
+          VERCEL_PROJECT_ID: prj_nirkR8BvVHRx1jr4FA041qJ9nWdj
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then echo "VERCEL_TOKEN not set — skipping web deploy"; exit 0; fi
+          npm i -g vercel@latest
+          vercel deploy --prod --yes --token="$VERCEL_TOKEN"
