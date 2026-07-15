@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { DashboardDTO } from '@ppm/shared';
+import type { DashboardDTO } from '@/lib/shared-types';
 import { api } from '@/lib/api';
 import { Button, Card, Input, Stat } from '@/components/ui';
 

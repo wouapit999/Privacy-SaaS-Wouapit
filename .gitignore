@@ -12,3 +12,6 @@ coverage/
 *.tsbuildinfo
 .turbo/
 prisma/*.db
+
+.vercel
+.env*

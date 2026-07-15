@@ -14,7 +14,6 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@ppm/shared": "workspace:*",
     "@types/node": "^20.16.10",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

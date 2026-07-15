@@ -1,6 +1,6 @@
 'use client';
 
-import type { AuthTokens, DashboardDTO } from '@ppm/shared';
+import type { AuthTokens, DashboardDTO } from './shared-types';
 
 export type LoginResult = AuthTokens | { mfaRequired: true; mfaToken: string };
 export const isMfaChallenge = (r: LoginResult): r is { mfaRequired: true; mfaToken: string } =>
