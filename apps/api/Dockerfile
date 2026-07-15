@@ -1,5 +1,7 @@
 # Multi-stage build for the NestJS API.
 FROM node:20-alpine AS base
+# Prisma's engines need OpenSSL/libssl at build (generate) and runtime on Alpine.
+RUN apk add --no-cache openssl libc6-compat
 RUN corepack enable
 WORKDIR /app
 
