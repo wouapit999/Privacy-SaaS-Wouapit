@@ -4,6 +4,9 @@ export interface RedisConnection {
   username?: string;
   password?: string;
   tls?: Record<string, never>;
+  // ioredis address family; 0 lets it use IPv6, required for Railway/Upstash
+  // internal hostnames (*.railway.internal) that only resolve over IPv6.
+  family?: number;
 }
 
 function buildRedis(): { host: string; port: number; connection: RedisConnection } {
@@ -17,6 +20,7 @@ function buildRedis(): { host: string; port: number; connection: RedisConnection
       username: u.username || undefined,
       password: u.password || undefined,
       tls: u.protocol === 'rediss:' ? {} : undefined,
+      family: 0, // allow IPv6 for managed Redis internal hostnames
     };
   } else {
     connection = {
