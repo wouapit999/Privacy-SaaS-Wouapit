@@ -102,4 +102,7 @@ jobs:
         run: |
           if [ -z "$VERCEL_TOKEN" ]; then echo "VERCEL_TOKEN not set — skipping web deploy"; exit 0; fi
           npm i -g vercel@latest
+          # `pull` links the project from VERCEL_ORG_ID/VERCEL_PROJECT_ID (no
+          # committed .vercel dir in CI), then deploy uploads + builds remotely.
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
           vercel deploy --prod --yes --token="$VERCEL_TOKEN"
