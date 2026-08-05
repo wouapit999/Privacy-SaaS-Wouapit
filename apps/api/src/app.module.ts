@@ -20,6 +20,7 @@ import { CopilotModule } from './copilot/copilot.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { AccountModule } from './account/account.module';
+import { BrokersModule } from './brokers/brokers.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -42,6 +43,7 @@ import { HealthModule } from './health/health.module';
     NotificationsModule,
     MonitoringModule,
     AccountModule,
+    BrokersModule,
     HealthModule,
   ],
   providers: [

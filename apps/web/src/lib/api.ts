@@ -96,6 +96,28 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ question }),
     }),
+  brokers: () =>
+    request<
+      {
+        id: string;
+        name: string;
+        domain: string;
+        optOutUrl: string;
+        method: 'EMAIL' | 'FORM';
+        jurisdiction: 'CCPA' | 'GDPR';
+        notes?: string;
+      }[]
+    >('/brokers'),
+  brokerOptOut: (id: string) =>
+    request<{
+      id: string;
+      broker: { id: string; name: string; domain: string };
+      kind: string;
+      method: 'EMAIL' | 'FORM';
+      sendTo: string | null;
+      body: string;
+      guidance: string;
+    }>(`/brokers/${id}/opt-out`, { method: 'POST' }),
   exportData: () => request<Record<string, unknown>>('/account/export'),
   deleteAccount: (opts: { password?: string; confirm?: string }) =>
     request<{ deleted: boolean }>('/account/delete', {
