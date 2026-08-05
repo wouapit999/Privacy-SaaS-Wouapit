@@ -96,6 +96,14 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ question }),
     }),
+  findings: () => request<import('./shared-types').FindingDTO[]>('/findings'),
+  markFindingRemoved: (id: string) =>
+    request<{ removed: boolean }>(`/findings/${id}/removed`, { method: 'POST' }),
+  createRemoval: (discoveredProfileId: string, kind: string) =>
+    request<{ id: string; kind: string; status: string; body: string; guidance: string }>(
+      '/removal/create',
+      { method: 'POST', body: JSON.stringify({ discoveredProfileId, kind }) },
+    ),
   breachStatus: () => request<{ emailCheckConfigured: boolean }>('/breach/status'),
   emailBreaches: (identityId: string) =>
     request<{

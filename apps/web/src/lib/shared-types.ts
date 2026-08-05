@@ -30,6 +30,22 @@ export interface DiscoveredResultDTO {
   discoveredAt: string;
 }
 
+export interface FindingDTO {
+  id: string;
+  url: string;
+  title: string | null;
+  source: string;
+  kind: DiscoveredKind;
+  confidence: number;
+  verified: boolean;
+  evidence: string | null;
+  severity: Severity;
+  hasEmail: boolean;
+  hasPhone: boolean;
+  hasAddress: boolean;
+  discoveredAt: string;
+}
+
 export interface DashboardDTO {
   exposureScore: number; // 0..100
   riskScore: number; // 0..100

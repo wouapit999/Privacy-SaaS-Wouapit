@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <div className="flex gap-4 text-sm">
               <Link href="/dashboard" className="hover:underline">Dashboard</Link>
+              <Link href="/findings" className="hover:underline">Findings</Link>
               <Link href="/identities" className="hover:underline">Identities</Link>
               <Link href="/brokers" className="hover:underline">Data brokers</Link>
               <Link href="/breach" className="hover:underline">Breach check</Link>
