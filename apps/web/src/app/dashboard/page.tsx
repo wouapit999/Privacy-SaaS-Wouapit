@@ -36,9 +36,14 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Exposure score" value={`${data.exposureScore}/100`} tone="warn" />
         <Stat label="Risk score" value={`${data.riskScore}/100`} tone={data.riskScore > 60 ? 'danger' : 'neutral'} />
-        <Stat label="Public profiles" value={data.counts.profiles} />
-        <Stat label="Public posts" value={data.counts.posts} />
+        <Stat label="Confirmed profiles" value={data.counts.profiles} />
+        <Stat label="Needs review" value={data.counts.unconfirmed} tone={data.counts.unconfirmed ? 'warn' : 'neutral'} />
       </div>
+      <p className="-mt-4 text-xs text-neutral-500">
+        Only <strong>confirmed</strong> findings — where the page content actually contained your
+        identifier (or an authoritative API verified it) — count toward your scores.
+        “Needs review” are hits we couldn’t confirm.
+      </p>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="Public emails" value={data.counts.publicEmails} tone={data.counts.publicEmails ? 'danger' : 'neutral'} />
@@ -54,7 +59,14 @@ export default function DashboardPage() {
               <a href={r.url} target="_blank" rel="noreferrer" className="text-brand hover:underline">
                 {r.title ?? r.url}
               </a>
-              <span className="text-xs text-neutral-500">{r.source} · {Math.round(r.confidence * 100)}%</span>
+              <span className="flex items-center gap-2 text-xs text-neutral-500">
+                {r.verified && (
+                  <span className="rounded bg-green-100 px-1.5 py-0.5 text-green-700 dark:bg-green-900/40 dark:text-green-400">
+                    ✓ confirmed
+                  </span>
+                )}
+                {r.source} · {Math.round(r.confidence * 100)}%
+              </span>
             </li>
           ))}
           {data.topRisks.length === 0 && <li className="text-neutral-500">No findings yet — run a scan.</li>}

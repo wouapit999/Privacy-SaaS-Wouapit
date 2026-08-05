@@ -201,6 +201,11 @@ model DiscoveredProfile {
   hasPhone     Boolean        @default(false)
   hasAddress   Boolean        @default(false)
   riskScore    Float          @default(0)
+  // Evidence-based verification: confirmed = the page content contained the
+  // identifier, or an authoritative API confirmed it. Unconfirmed findings are
+  // shown separately and excluded from the risk/exposure score.
+  verified     Boolean        @default(false)
+  evidence     String?
   discoveredAt DateTime       @default(now())
   removedAt    DateTime?
 

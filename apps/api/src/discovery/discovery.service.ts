@@ -8,6 +8,7 @@ import { XConnector } from './connectors/x.connector';
 import { LinkedInConnector } from './connectors/linkedin.connector';
 import { WebSearchConnector } from './connectors/web-search.connector';
 import { DiscoveryHit, DiscoveryQuery, PresenceConnector } from './connectors/connector.interface';
+import { EvidenceService } from './evidence.service';
 
 @Injectable()
 export class DiscoveryService {
@@ -23,6 +24,7 @@ export class DiscoveryService {
     x: XConnector,
     linkedin: LinkedInConnector,
     webSearch: WebSearchConnector,
+    private readonly evidence: EvidenceService,
   ) {
     this.connectors = [github, reddit, x, linkedin, webSearch];
     this.maxPages = config.get<number>('discovery.maxPagesPerScan')!;
@@ -50,7 +52,15 @@ export class DiscoveryService {
         this.logger.log(`Skipped (robots.txt disallow): ${hit.url}`);
       }
     }
-    return this.dedupe(allowed);
+    // Evidence pass: confirm each hit's content actually contains the identifier
+    // (or was API-confirmed). Unverified hits are still returned but flagged.
+    const deduped = this.dedupe(allowed);
+    return Promise.all(
+      deduped.map(async (hit) => {
+        const ev = await this.evidence.verify(query, hit);
+        return { ...hit, verified: ev.verified, evidence: ev.evidence ?? null };
+      }),
+    );
   }
 
   /** Simple URL-based duplicate detection; identity correlation lives in copilot/risk. */

@@ -23,6 +23,7 @@ export interface DiscoveredResultDTO {
   source: string;
   kind: DiscoveredKind;
   confidence: number; // 0..1
+  verified?: boolean;
   discoveredAt: string;
 }
 
@@ -31,6 +32,7 @@ export interface DashboardDTO {
   riskScore: number; // 0..100
   counts: {
     profiles: number;
+    unconfirmed: number;
     posts: number;
     publicEmails: number;
     publicPhones: number;

@@ -91,6 +91,8 @@ export class ScanProcessor implements OnModuleInit, OnModuleDestroy {
             hasPhone: cls.hasPhone,
             hasAddress: cls.hasAddress,
             riskScore: cls.riskScore,
+            verified: hit.verified ?? false,
+            evidence: hit.evidence ?? null,
           },
         });
       }

@@ -1,19 +1,24 @@
 import { RiskService } from './risk.service';
 
-function serviceWith(profiles: any[]) {
+function serviceWith(profiles: any[], unconfirmed = 0) {
   const prisma = {
-    discoveredProfile: { findMany: jest.fn().mockResolvedValue(profiles) },
+    discoveredProfile: {
+      // Only verified profiles are returned by the scored query.
+      findMany: jest.fn().mockResolvedValue(profiles),
+      count: jest.fn().mockResolvedValue(unconfirmed),
+    },
   } as any;
   return new RiskService(prisma);
 }
 
 describe('RiskService', () => {
-  it('returns zeros when nothing is discovered', async () => {
-    const svc = serviceWith([]);
+  it('returns zeros (plus the unconfirmed count) when nothing is confirmed', async () => {
+    const svc = serviceWith([], 3);
     await expect(svc.scoreFor('u1')).resolves.toEqual({
       exposureScore: 0,
       riskScore: 0,
       sampleSize: 0,
+      unconfirmed: 3,
     });
   });
 

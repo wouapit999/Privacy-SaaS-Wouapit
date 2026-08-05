@@ -31,6 +31,7 @@ export interface DiscoveredResultDTO {
   source: string;
   kind: DiscoveredKind;
   confidence: number; // 0..1
+  verified?: boolean; // evidence-confirmed the identifier appears at the URL
   discoveredAt: string;
 }
 
@@ -38,7 +39,8 @@ export interface DashboardDTO {
   exposureScore: number; // 0..100
   riskScore: number; // 0..100
   counts: {
-    profiles: number;
+    profiles: number; // confirmed (evidence-verified) profiles
+    unconfirmed: number; // hits pending review (identifier not confirmed in content)
     posts: number;
     publicEmails: number;
     publicPhones: number;

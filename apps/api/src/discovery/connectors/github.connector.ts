@@ -31,6 +31,9 @@ export class GithubConnector implements PresenceConnector {
           source: this.source,
           kind: 'PROFILE',
           confidence: 0.9,
+          // Authoritative API confirmed this exact handle exists.
+          verified: true,
+          evidence: `GitHub public API confirmed the account @${user.login}.`,
         },
       ];
     } catch (err) {

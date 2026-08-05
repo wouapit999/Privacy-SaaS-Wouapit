@@ -12,17 +12,21 @@ export class DashboardService {
 
   async build(userId: string): Promise<DashboardDTO> {
     const where = { identity: { userId }, removedAt: null };
-    const [scores, profiles, posts, pii, top] = await Promise.all([
+    // Confirmed = evidence-verified. Counts/PII/top-risks use only confirmed
+    // findings; unconfirmed hits are surfaced as a separate "needs review" count.
+    const confirmed = { ...where, verified: true };
+    const [scores, profiles, unconfirmed, posts, pii, top] = await Promise.all([
       this.risk.scoreFor(userId),
-      this.prisma.discoveredProfile.count({ where }),
+      this.prisma.discoveredProfile.count({ where: confirmed }),
+      this.prisma.discoveredProfile.count({ where: { ...where, verified: false } }),
       this.prisma.discoveredPost.count({ where: { profile: { identity: { userId } } } }),
       this.prisma.discoveredProfile.groupBy({
         by: ['hasEmail', 'hasPhone', 'hasAddress'],
-        where,
+        where: confirmed,
         _count: true,
       }),
       this.prisma.discoveredProfile.findMany({
-        where,
+        where: confirmed,
         orderBy: { riskScore: 'desc' },
         take: 5,
       }),
@@ -36,6 +40,7 @@ export class DashboardService {
       riskScore: scores.riskScore,
       counts: {
         profiles,
+        unconfirmed,
         posts,
         publicEmails: sum((r) => r.hasEmail),
         publicPhones: sum((r) => r.hasPhone),
@@ -48,6 +53,7 @@ export class DashboardService {
         source: p.source,
         kind: p.kind,
         confidence: p.confidence,
+        verified: p.verified,
         discoveredAt: p.discoveredAt.toISOString(),
       })),
     };

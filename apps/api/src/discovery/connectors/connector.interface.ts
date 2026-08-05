@@ -6,6 +6,10 @@ export interface DiscoveryHit {
   source: string;
   kind: DiscoveredKind;
   confidence: number; // 0..1
+  // Set by connectors that confirm via an authoritative API. Left undefined for
+  // page-based hits, which the EvidenceService verifies by content match.
+  verified?: boolean;
+  evidence?: string | null;
 }
 
 export interface DiscoveryQuery {
