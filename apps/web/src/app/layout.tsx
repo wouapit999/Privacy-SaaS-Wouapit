@@ -20,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/dashboard" className="hover:underline">Dashboard</Link>
               <Link href="/identities" className="hover:underline">Identities</Link>
               <Link href="/brokers" className="hover:underline">Data brokers</Link>
+              <Link href="/breach" className="hover:underline">Breach check</Link>
               <Link href="/privacy" className="hover:underline">Privacy</Link>
               <Link href="/security" className="hover:underline">Security</Link>
               <Link href="/login" className="hover:underline">Sign in</Link>

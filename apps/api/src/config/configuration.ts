@@ -50,6 +50,9 @@ export const configuration = () => ({
   // often with a password and TLS via the rediss:// scheme). Fall back to
   // discrete host/port for local/docker.
   redis: buildRedis(),
+  // Have I Been Pwned API key (paid) — enables the email breach check. The
+  // password check is client-side/keyless and needs nothing here.
+  hibp: { apiKey: process.env.HIBP_API_KEY ?? '' },
   ai: {
     provider: (process.env.AI_PROVIDER ?? 'stub') as 'stub' | 'openai',
     baseUrl: process.env.AI_BASE_URL ?? 'https://api.openai.com/v1',

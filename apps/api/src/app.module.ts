@@ -21,6 +21,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { AccountModule } from './account/account.module';
 import { BrokersModule } from './brokers/brokers.module';
+import { BreachModule } from './breach/breach.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -44,6 +45,7 @@ import { HealthModule } from './health/health.module';
     MonitoringModule,
     AccountModule,
     BrokersModule,
+    BreachModule,
     HealthModule,
   ],
   providers: [

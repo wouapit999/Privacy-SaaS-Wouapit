@@ -96,6 +96,12 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ question }),
     }),
+  breachStatus: () => request<{ emailCheckConfigured: boolean }>('/breach/status'),
+  emailBreaches: (identityId: string) =>
+    request<{
+      identity: string;
+      breaches: { name: string; domain: string | null; date: string | null; dataClasses: string[] }[];
+    }>('/breach/email', { method: 'POST', body: JSON.stringify({ identityId }) }),
   brokers: () =>
     request<
       {
