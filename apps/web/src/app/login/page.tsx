@@ -90,10 +90,6 @@ export default function LoginPage() {
             {loading ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
-        <div className="mt-6 flex items-center gap-3 text-xs text-neutral-400">
-          <span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" /> or
-          <span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
-        </div>
         <OAuthButtons />
         <p className="mt-4 text-sm text-neutral-500">
           No account? <Link href="/register" className="text-brand hover:underline">Register</Link>

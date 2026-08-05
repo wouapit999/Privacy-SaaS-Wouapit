@@ -46,6 +46,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ email, password, name }),
     }),
+  oauthProviders: () =>
+    request<{ google: boolean; microsoft: boolean }>('/auth/oauth/providers'),
   login: (email: string, password: string) =>
     request<LoginResult>('/auth/login', {
       method: 'POST',

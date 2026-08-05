@@ -43,6 +43,19 @@ export class AuthController {
     return this.auth.refresh(dto.refreshToken);
   }
 
+  /**
+   * Public: which OAuth providers are actually configured. The UI uses this to
+   * only show buttons that will work (declared BEFORE the :provider route so
+   * "providers" isn't captured as a provider name).
+   */
+  @Get('oauth/providers')
+  providers() {
+    return {
+      google: this.oauth.isConfigured('google'),
+      microsoft: this.oauth.isConfigured('microsoft'),
+    };
+  }
+
   /** Begin OAuth login/sign-up: redirects the browser to the provider. */
   @Get('oauth/:provider')
   start(@Param('provider') provider: string, @Res() res: Response) {
