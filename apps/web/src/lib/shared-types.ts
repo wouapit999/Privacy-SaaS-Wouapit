@@ -2,6 +2,8 @@
 // (rather than importing @ppm/shared) so apps/web builds standalone on Vercel
 // without needing the pnpm workspace root. Keep in sync with packages/shared.
 
+export type Severity = 'critical' | 'high' | 'medium' | 'low';
+
 export type DiscoveredKind =
   | 'PROFILE'
   | 'POST'
@@ -24,6 +26,7 @@ export interface DiscoveredResultDTO {
   kind: DiscoveredKind;
   confidence: number; // 0..1
   verified?: boolean;
+  severity?: Severity;
   discoveredAt: string;
 }
 
@@ -38,5 +41,6 @@ export interface DashboardDTO {
     publicPhones: number;
     publicAddresses: number;
   };
+  severityCounts: Record<Severity, number>;
   topRisks: DiscoveredResultDTO[];
 }

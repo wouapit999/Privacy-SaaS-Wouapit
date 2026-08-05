@@ -19,6 +19,8 @@ export type RemovalKind = 'GDPR' | 'CCPA' | 'PROFILE_REMOVAL' | 'PRIVACY_SETTING
 
 export type MonitorFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY';
 
+export type Severity = 'critical' | 'high' | 'medium' | 'low';
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
@@ -32,6 +34,7 @@ export interface DiscoveredResultDTO {
   kind: DiscoveredKind;
   confidence: number; // 0..1
   verified?: boolean; // evidence-confirmed the identifier appears at the URL
+  severity?: Severity; // deterministic tier from the §5.1 risk model
   discoveredAt: string;
 }
 
@@ -46,5 +49,6 @@ export interface DashboardDTO {
     publicPhones: number;
     publicAddresses: number;
   };
+  severityCounts: Record<Severity, number>;
   topRisks: DiscoveredResultDTO[];
 }

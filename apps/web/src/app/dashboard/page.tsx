@@ -1,9 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { DashboardDTO } from '@/lib/shared-types';
+import type { DashboardDTO, Severity } from '@/lib/shared-types';
 import { api } from '@/lib/api';
 import { Button, Card, Input, Stat } from '@/components/ui';
+
+// Blueprint §5.1 colours: critical=Red, high=Orange, medium=Yellow, low=Green.
+const SEVERITY: Record<Severity, { label: string; cls: string }> = {
+  critical: { label: 'Critical', cls: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400' },
+  high: { label: 'High', cls: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400' },
+  medium: { label: 'Medium', cls: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-500' },
+  low: { label: 'Low', cls: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' },
+};
+const SEVERITY_ORDER: Severity[] = ['critical', 'high', 'medium', 'low'];
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardDTO | null>(null);
@@ -45,6 +54,18 @@ export default function DashboardPage() {
         “Needs review” are hits we couldn’t confirm.
       </p>
 
+      <div>
+        <h2 className="mb-2 text-sm font-medium text-neutral-500">Findings by severity</h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {SEVERITY_ORDER.map((s) => (
+            <div key={s} className={`rounded-xl p-4 ${SEVERITY[s].cls}`}>
+              <div className="text-2xl font-semibold">{data.severityCounts[s]}</div>
+              <div className="text-xs font-medium uppercase tracking-wide">{SEVERITY[s].label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="Public emails" value={data.counts.publicEmails} tone={data.counts.publicEmails ? 'danger' : 'neutral'} />
         <Stat label="Public phones" value={data.counts.publicPhones} tone={data.counts.publicPhones ? 'danger' : 'neutral'} />
@@ -60,11 +81,12 @@ export default function DashboardPage() {
                 {r.title ?? r.url}
               </a>
               <span className="flex items-center gap-2 text-xs text-neutral-500">
-                {r.verified && (
-                  <span className="rounded bg-green-100 px-1.5 py-0.5 text-green-700 dark:bg-green-900/40 dark:text-green-400">
-                    ✓ confirmed
+                {r.severity && (
+                  <span className={`rounded px-1.5 py-0.5 font-medium ${SEVERITY[r.severity].cls}`}>
+                    {SEVERITY[r.severity].label}
                   </span>
                 )}
+                {r.verified && <span className="text-green-600">✓</span>}
                 {r.source} · {Math.round(r.confidence * 100)}%
               </span>
             </li>
